@@ -127,7 +127,7 @@ module gcd_coprocessor_testbench;
   reg [  63:0] cycle_count = 0;
   always @(posedge clk) begin
     cycle_count = cycle_count + 1;
-    if (cycle_count >= 10) begin
+    if (cycle_count >= 1000) begin
       $display("TIMEOUT");
       $finish;
     end

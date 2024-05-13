@@ -42,7 +42,7 @@ end
 
 //write data to FIFO
 always@(posedge clk) begin 
-    if(enq_fire) begin 
+    if(enq_val & !enq_rdy) begin 
         buffer[wptr] <= enq_data; 
         wptr <= wptr + 1;
     end 
@@ -50,7 +50,7 @@ end
 
 //read data from FIFO 
 always@(posedge clk) begin 
-    if (deq_fire) begin 
+    if (!deq_val & deq_rdy) begin 
         deq_data <= buffer[rptr];
         rptr <= rptr + 1; 
     end 

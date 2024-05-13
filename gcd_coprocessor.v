@@ -18,7 +18,7 @@ module gcd_coprocessor #( parameter W = 32 ) (
   // You should be able to build this with mostly structural verilog!
   
   // TODO: Define wires
-  wire enq_rdy_A, enq_rdy_B, deq_val_A, deq_val_B, deq_val_o; 
+  wire enq_rdy_A, enq_rdy_B, enq_rdy_o, deq_val_A, deq_val_B, deq_val_o; 
   wire B_mux_sel, A_en, B_en, B_zero, A_lt_B; 
   wire [1:0] A_mux_sel; 
   
@@ -27,20 +27,18 @@ module gcd_coprocessor #( parameter W = 32 ) (
   wire [W-1:0] operands_bits_A_in;
   wire [W-1:0] operands_bits_B_in; 
 
-  wire result_val_i; 
+  wire result_val_o; 
   wire operands_rdy_o;  
-  wire operands_val_o;
-  wire result_rdy_o;
 
   // TODO: Instantiate gcd_control
   gcd_control control_module(
     // external
     //input signal 
-    .operands_val(operands_val_o), 
-    .result_rdy(result_rdy_o), 
+    .operands_val(operands_val), 
+    .result_rdy(result_rdy), 
     //output signal
     .operands_rdy(operands_rdy_o),
-    .result_val(result_val_i), 
+    .result_val(result_val_o), 
 
     // system
     .clk(clk), 
@@ -55,8 +53,6 @@ module gcd_coprocessor #( parameter W = 32 ) (
     .B_mux_sel(B_mux_sel)
 
   );
-  assign operands_val_o = enq_rdy_A && enq_rdy_B; 
-  assign result_rdy_o = result_rdy; 
 
 // TODO: Instantiate gcd_datapath
   gcd_datapath #(W) datapath_module(
@@ -97,14 +93,14 @@ module gcd_coprocessor #( parameter W = 32 ) (
     .clk(clk), 
     .reset(reset), 
     //input signal
-    .enq_val(operands_val), // write enable signal
-    .deq_rdy(operands_rdy_o), // read enable signal 
-    .enq_data(operands_bits_B), // input
+    .enq_val(operands_val), //write enable signal
+    .deq_rdy(operands_rdy_o), //read enable signal 
+    .enq_data(operands_bits_B), //input
     
     //output signal
-    .enq_rdy(enq_rdy_B), // full signal 
-    .deq_val(deq_val_B), // empty signal 
-    .deq_data(operands_bits_B_in) // output 
+    .enq_rdy(enq_rdy_B), //full signal 
+    .deq_val(deq_val_B), //empty signal 
+    .deq_data(operands_bits_B_in) //output 
   );
 
  
@@ -113,15 +109,16 @@ module gcd_coprocessor #( parameter W = 32 ) (
     .clk(clk), 
     .reset(reset), 
     //input signal 
-    .enq_val(result_val_i),  // write enable signal
-    .deq_rdy(result_rdy_o), // read enable signal
+    .enq_val(result_val_o),  //write enable signal
+    .deq_rdy(result_rdy), //read enable signal
     .enq_data(result_bits_data_in), //input
     //output signal 
-    .enq_rdy(result_val),  // full signal
-    .deq_val(deq_val_o), // empty signal 
-    .deq_data(result_bits) // output 
+    .enq_rdy(enq_rdy_o),  //full signal
+    .deq_val(deq_val_o), //empty signal 
+    .deq_data(result_bits) //output 
   );
 
-  assign operands_rdy  = deq_val_A && deq_val_B; 
+  assign operands_rdy  = operands_rdy_o; 
+  assign result_val = result_val_o; 
 
 endmodule
